@@ -28,6 +28,7 @@ export const api = {
     functions,
     "updateMember"
   ),
+  deleteMember: httpsCallable<{ memberId: string }, { success: boolean }>(functions, "deleteMember"),
 
   // Administrators (not club members — no registration number, no roster presence)
   createAdministrator: httpsCallable<{ name: string; email: string }, { adminId: string; email: string }>(

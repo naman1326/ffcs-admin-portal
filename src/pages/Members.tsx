@@ -24,6 +24,7 @@ export default function Members() {
   const [showAdd, setShowAdd] = useState(false);
   const [showBulkImport, setShowBulkImport] = useState(false);
   const [confirmTarget, setConfirmTarget] = useState<{ member: Member; action: "activate" | "deactivate" } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Member | null>(null);
   const [resendingId, setResendingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -336,10 +337,18 @@ export default function Members() {
                           {resendingId === m.memberId ? "Sending..." : "Resend Setup"}
                         </button>
                         <button
-                          className={`btn btn-sm ${m.isActive ? "btn-danger" : ""}`}
+                          className={`btn btn-sm ${m.isActive ? "" : "btn-primary"}`}
                           onClick={() => setConfirmTarget({ member: m, action: m.isActive ? "deactivate" : "activate" })}
                         >
                           {m.isActive ? "Deactivate" : "Activate"}
+                        </button>
+                        <button
+                          className="btn btn-sm btn-danger"
+                          disabled={m.memberId === user?.uid}
+                          onClick={() => setDeleteTarget(m)}
+                          title={m.memberId === user?.uid ? "You cannot delete your own account" : "Permanently delete member"}
+                        >
+                          Delete
                         </button>
                       </div>
                     </td>
@@ -372,6 +381,24 @@ export default function Members() {
             try {
               await api.setMemberActive({ memberId: confirmTarget.member.memberId, isActive: confirmTarget.action === "activate" });
               toast.success(`FFCS member ${confirmTarget.action}d successfully.`);
+            } catch (err) {
+              toast.error(friendlyError(err));
+            }
+          }}
+        />
+      )}
+
+      {deleteTarget && (
+        <ConfirmModal
+          title="Delete FFCS Member"
+          message={`Are you sure you want to permanently delete ${deleteTarget.name} (${deleteTarget.registrationNumber})? This will delete their account, free up their registration number and email, and remove their profile.`}
+          confirmLabel="Delete Member"
+          danger
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={async () => {
+            try {
+              await api.deleteMember({ memberId: deleteTarget.memberId });
+              toast.success(`${deleteTarget.name} deleted successfully.`);
             } catch (err) {
               toast.error(friendlyError(err));
             }
