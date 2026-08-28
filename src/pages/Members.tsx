@@ -59,21 +59,27 @@ export default function Members() {
     const validMeetingIds = new Set(validMeetings.map((m) => m.meetingId));
     const validEventIds = new Set(validEvents.map((e) => e.eventId));
 
-    const totalMeetings = validMeetings.length;
-    const totalEvents = validEvents.length;
-    const totalItems = totalMeetings + totalEvents;
-
-    const memberMeetingAtt = new Map<string, number>();
+    const memberMeetingAtt = new Map<string, { attended: number; marked: number }>();
     for (const rec of meetingAttendance) {
-      if (rec.status === "Present" && validMeetingIds.has(rec.meetingId)) {
-        memberMeetingAtt.set(rec.memberId, (memberMeetingAtt.get(rec.memberId) ?? 0) + 1);
+      if (validMeetingIds.has(rec.meetingId)) {
+        const curr = memberMeetingAtt.get(rec.memberId) ?? { attended: 0, marked: 0 };
+        curr.marked += 1;
+        if (rec.status === "Present") {
+          curr.attended += 1;
+        }
+        memberMeetingAtt.set(rec.memberId, curr);
       }
     }
 
-    const memberEventAtt = new Map<string, number>();
+    const memberEventAtt = new Map<string, { attended: number; marked: number }>();
     for (const rec of eventAttendance) {
-      if (rec.status === "Present" && validEventIds.has(rec.eventId)) {
-        memberEventAtt.set(rec.memberId, (memberEventAtt.get(rec.memberId) ?? 0) + 1);
+      if (validEventIds.has(rec.eventId)) {
+        const curr = memberEventAtt.get(rec.memberId) ?? { attended: 0, marked: 0 };
+        curr.marked += 1;
+        if (rec.status === "Present") {
+          curr.attended += 1;
+        }
+        memberEventAtt.set(rec.memberId, curr);
       }
     }
 
@@ -81,11 +87,11 @@ export default function Members() {
       string,
       {
         meetingsAttended: number;
-        totalMeetings: number;
+        meetingsMarked: number;
         eventsAttended: number;
-        totalEvents: number;
+        eventsMarked: number;
         totalAttended: number;
-        totalItems: number;
+        totalMarked: number;
         meetingsRatio: string;
         percentage: number | null;
         percentageText: string;
@@ -93,21 +99,28 @@ export default function Members() {
     >();
 
     for (const member of members) {
-      const attendedMeetings = memberMeetingAtt.get(member.memberId) ?? 0;
-      const attendedEvents = memberEventAtt.get(member.memberId) ?? 0;
-      const totalAttended = attendedMeetings + attendedEvents;
+      const meetingStats = memberMeetingAtt.get(member.memberId) ?? { attended: 0, marked: 0 };
+      const eventStats = memberEventAtt.get(member.memberId) ?? { attended: 0, marked: 0 };
 
-      const meetingsRatio = totalMeetings === 0 ? "None" : `${attendedMeetings}/${totalMeetings}`;
-      const percentage = totalItems === 0 ? null : Math.round((totalAttended / totalItems) * 100);
+      const attendedMeetings = meetingStats.attended;
+      const markedMeetings = meetingStats.marked;
+      const attendedEvents = eventStats.attended;
+      const markedEvents = eventStats.marked;
+
+      const totalAttended = attendedMeetings + attendedEvents;
+      const totalMarked = markedMeetings + markedEvents;
+
+      const meetingsRatio = markedMeetings === 0 ? "None" : `${attendedMeetings}/${markedMeetings}`;
+      const percentage = totalMarked === 0 ? null : Math.round((totalAttended / totalMarked) * 100);
       const percentageText = percentage !== null ? `${percentage}%` : "None";
 
       map.set(member.memberId, {
         meetingsAttended: attendedMeetings,
-        totalMeetings,
+        meetingsMarked: markedMeetings,
         eventsAttended: attendedEvents,
-        totalEvents,
+        eventsMarked: markedEvents,
         totalAttended,
-        totalItems,
+        totalMarked,
         meetingsRatio,
         percentage,
         percentageText,
@@ -299,7 +312,7 @@ export default function Members() {
                               ? "badge-other"
                               : "badge-absent"
                           }`}
-                          title={`${att.totalAttended} of ${att.totalItems} total meetings & events attended (${att.meetingsAttended}/${att.totalMeetings} meetings, ${att.eventsAttended}/${att.totalEvents} events)`}
+                          title={`${att.totalAttended} of ${att.totalMarked} marked meetings & events attended (${att.meetingsAttended}/${att.meetingsMarked} meetings, ${att.eventsAttended}/${att.eventsMarked} events)`}
                         >
                           {att.percentageText}
                         </span>
@@ -318,7 +331,7 @@ export default function Members() {
                             fontWeight: 600,
                             fontSize: "0.85rem",
                           }}
-                          title={`${att.meetingsAttended} of ${att.totalMeetings} meetings attended`}
+                          title={`${att.meetingsAttended} of ${att.meetingsMarked} marked meetings attended`}
                         >
                           {att.meetingsRatio}
                         </code>

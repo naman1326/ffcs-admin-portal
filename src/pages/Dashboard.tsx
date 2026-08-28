@@ -19,22 +19,35 @@ export default function Dashboard() {
     setLoading(true);
     try {
       const todayStr = new Date().toISOString().slice(0, 10);
-      const [membersCount, meetingsCount, eventsCount, presentCount, totalAttCount, externalCount, ownCount] = await Promise.all([
+      const [
+        membersCount,
+        meetingsCount,
+        eventsCount,
+        presentMeetingCount,
+        totalMeetingAttCount,
+        presentEventCount,
+        totalEventAttCount,
+        externalCount,
+        ownCount,
+      ] = await Promise.all([
         getCountFromServer(query(collection(db, "members"), where("isActive", "==", true))),
         getCountFromServer(query(collection(db, "meetings"), where("status", "==", "scheduled"), where("date", ">=", todayStr))),
         getCountFromServer(query(collection(db, "events"), where("status", "==", "published"), where("date", ">=", todayStr))),
         getCountFromServer(query(collection(db, "meetingAttendance"), where("status", "==", "Present"))),
         getCountFromServer(collection(db, "meetingAttendance")),
+        getCountFromServer(query(collection(db, "eventAttendance"), where("status", "==", "Present"))),
+        getCountFromServer(collection(db, "eventAttendance")),
         getCountFromServer(collection(db, "eventRegistrations")),
         getCountFromServer(collection(db, "ownEventRegistrations")),
       ]);
 
-      const total = totalAttCount.data().count;
+      const totalMarked = totalMeetingAttCount.data().count + totalEventAttCount.data().count;
+      const totalPresent = presentMeetingCount.data().count + presentEventCount.data().count;
       setStats({
         totalMembers: membersCount.data().count,
         upcomingMeetings: meetingsCount.data().count,
         upcomingEvents: eventsCount.data().count,
-        attendancePct: total > 0 ? Math.round((presentCount.data().count / total) * 100) : null,
+        attendancePct: totalMarked > 0 ? Math.round((totalPresent / totalMarked) * 100) : null,
         totalRegistrations: externalCount.data().count + ownCount.data().count,
       });
     } catch {
