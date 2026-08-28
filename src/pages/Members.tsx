@@ -238,7 +238,6 @@ export default function Members() {
                 <th>Member Name</th>
                 <th>Reg. Number</th>
                 <th>College Email</th>
-                <th>Role</th>
                 <th>Status</th>
                 <th>Attendance %</th>
                 <th>Meetings Attended</th>
@@ -259,22 +258,6 @@ export default function Members() {
                       </code>
                     </td>
                     <td style={{ color: "var(--text-secondary)" }}>{m.collegeEmail}</td>
-                    <td>
-                      <span
-                        style={{
-                          fontSize: "0.82rem",
-                          fontWeight: 500,
-                          color: "var(--text-secondary)",
-                          background: "rgba(255, 107, 53, 0.08)",
-                          padding: "3px 8px",
-                          borderRadius: "6px",
-                          border: "1px solid rgba(255, 107, 53, 0.15)",
-                          display: "inline-block",
-                        }}
-                      >
-                        {m.role === "admin" ? "Admin" : "FFCS Member"}
-                      </span>
-                    </td>
                     <td>
                       <span className={`badge ${m.isActive ? "badge-present" : "badge-absent"}`}>
                         {m.isActive ? "Active" : "Inactive"}
@@ -348,7 +331,7 @@ export default function Members() {
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={8}>
+                  <td colSpan={7}>
                     <p className="empty-state">No FFCS members match your search or filter.</p>
                   </td>
                 </tr>
