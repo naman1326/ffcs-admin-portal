@@ -10,7 +10,7 @@ import ConfirmModal from "../components/ConfirmModal";
 import { useAuth } from "../context/AuthContext";
 import BulkImport from "../components/BulkImport";
 
-type FilterTab = "all" | "active" | "inactive" | "member" | "admin";
+type FilterTab = "all" | "active" | "inactive";
 
 export default function Members() {
   const { user } = useAuth();
@@ -134,8 +134,6 @@ export default function Members() {
     let list = members;
     if (filterTab === "active") list = list.filter((m) => m.isActive);
     if (filterTab === "inactive") list = list.filter((m) => !m.isActive);
-    if (filterTab === "member") list = list.filter((m) => m.role === "member");
-    if (filterTab === "admin") list = list.filter((m) => m.role === "admin");
 
     const q = search.trim().toLowerCase();
     if (!q) return list;
@@ -146,16 +144,6 @@ export default function Members() {
         m.collegeEmail.toLowerCase().includes(q)
     );
   }, [members, search, filterTab]);
-
-  async function handleRoleChange(member: Member, role: Role) {
-    try {
-      await api.setMemberRole({ memberId: member.memberId, role });
-      const roleLabel = role === "admin" ? "Admin" : "FFCS Member";
-      toast.success(`${member.name} is now ${roleLabel}.`);
-    } catch (err) {
-      toast.error(friendlyError(err));
-    }
-  }
 
   async function handleResendSetupEmail(member: Member) {
     setResendingId(member.memberId);
@@ -171,7 +159,6 @@ export default function Members() {
 
   const activeCount = members.filter((m) => m.isActive).length;
   const inactiveCount = members.length - activeCount;
-  const adminCount = members.filter((m) => m.role === "admin").length;
 
   return (
     <div>
@@ -241,20 +228,6 @@ export default function Members() {
             >
               Inactive ({inactiveCount})
             </button>
-            <button
-              type="button"
-              className={`filter-chip ${filterTab === "member" ? "is-active" : ""}`}
-              onClick={() => setFilterTab("member")}
-            >
-              FFCS Members ({members.length - adminCount})
-            </button>
-            <button
-              type="button"
-              className={`filter-chip ${filterTab === "admin" ? "is-active" : ""}`}
-              onClick={() => setFilterTab("admin")}
-            >
-              Admins ({adminCount})
-            </button>
           </div>
         </div>
 
@@ -287,15 +260,20 @@ export default function Members() {
                     </td>
                     <td style={{ color: "var(--text-secondary)" }}>{m.collegeEmail}</td>
                     <td>
-                      <select
-                        value={m.role}
-                        onChange={(e) => handleRoleChange(m, e.target.value as Role)}
-                        disabled={m.memberId === user?.uid}
-                        style={{ padding: "4px 8px", fontSize: "0.82rem", maxWidth: 140 }}
+                      <span
+                        style={{
+                          fontSize: "0.82rem",
+                          fontWeight: 500,
+                          color: "var(--text-secondary)",
+                          background: "rgba(255, 107, 53, 0.08)",
+                          padding: "3px 8px",
+                          borderRadius: "6px",
+                          border: "1px solid rgba(255, 107, 53, 0.15)",
+                          display: "inline-block",
+                        }}
                       >
-                        <option value="member">FFCS Member</option>
-                        <option value="admin">Admin</option>
-                      </select>
+                        {m.role === "admin" ? "Admin" : "FFCS Member"}
+                      </span>
                     </td>
                     <td>
                       <span className={`badge ${m.isActive ? "badge-present" : "badge-absent"}`}>
@@ -426,13 +404,12 @@ function AddMemberModal({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState("");
   const [registrationNumber, setRegistrationNumber] = useState("");
   const [collegeEmail, setCollegeEmail] = useState("");
-  const [role, setRole] = useState<Role>("member");
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit() {
     setSubmitting(true);
     try {
-      const res = await api.createMember({ name, registrationNumber, collegeEmail, role });
+      const res = await api.createMember({ name, registrationNumber, collegeEmail, role: "member" });
       await sendPasswordResetEmail(auth, res.data.collegeEmail);
       toast.success(`${name} added — setup email sent to ${res.data.collegeEmail}.`);
       onClose();
@@ -464,12 +441,6 @@ function AddMemberModal({ onClose }: { onClose: () => void }) {
         value={collegeEmail}
         onChange={(e) => setCollegeEmail(e.target.value)}
       />
-
-      <label htmlFor="role">Club Role</label>
-      <select id="role" value={role} onChange={(e) => setRole(e.target.value as Role)}>
-        <option value="member">FFCS Member</option>
-        <option value="admin">Administrator</option>
-      </select>
 
       <p className="field-hint">
         An invitation and password setup email will be automatically sent to the member's college email address upon creation.

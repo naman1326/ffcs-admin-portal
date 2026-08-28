@@ -61,7 +61,7 @@ function rowsFromRecords(records: Record<string, unknown>[]): { rows: ParsedRow[
       name: mapped.name ?? "",
       registrationNumber: (mapped.registrationNumber ?? "").toUpperCase(),
       collegeEmail: (mapped.collegeEmail ?? "").toLowerCase(),
-      role: mapped.role === "admin" ? "admin" : "member",
+      role: "member",
     };
   });
 
@@ -90,7 +90,7 @@ async function parseFile(file: File): Promise<{ rows: ParsedRow[]; error?: strin
 }
 
 function downloadTemplate() {
-  const csv = "name,registrationNumber,collegeEmail,role\nRahul Sharma,24BCE5051,rahul.sharma2024@vitstudent.ac.in,member\n";
+  const csv = "name,registrationNumber,collegeEmail\nRahul Sharma,24BCE5051,rahul.sharma2024@vitstudent.ac.in\n";
   const blob = new Blob([csv], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
