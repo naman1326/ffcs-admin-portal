@@ -37,7 +37,7 @@ export default function Events() {
           <div>
             <h1>Club Events</h1>
             <p className="page-subtitle" style={{ margin: "4px 0 0" }}>
-              Publish events, manage participant registrations, track Drive receipts, and take attendance.
+              Publish events, manage schedules, and record member attendance.
             </p>
           </div>
           <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
@@ -56,8 +56,8 @@ export default function Events() {
             <tr>
               <th>Event Title</th>
               <th>Date</th>
+              <th>Time Window</th>
               <th>Venue</th>
-              <th>Registration Deadline</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -76,10 +76,10 @@ export default function Events() {
                   )}
                 </td>
                 <td style={{ whiteSpace: "nowrap" }}>{ev.date}</td>
-                <td>{ev.venue}</td>
                 <td style={{ fontSize: "0.84rem", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
-                  {new Date(ev.registrationDeadline).toLocaleString()}
+                  ⏰ {ev.startTime} – {ev.endTime}
                 </td>
+                <td>{ev.venue}</td>
                 <td>
                   <span className={`badge badge-${ev.status}`}>{ev.status}</span>
                 </td>
@@ -134,23 +134,19 @@ function EventFormModal({ event, onClose }: { event?: ClubEvent; onClose: () => 
   const [startTime, setStartTime] = useState(event?.startTime ?? "");
   const [endTime, setEndTime] = useState(event?.endTime ?? "");
   const [venue, setVenue] = useState(event?.venue ?? "");
-  const [registrationDeadline, setRegistrationDeadline] = useState(
-    event?.registrationDeadline ? event.registrationDeadline.slice(0, 16) : ""
-  );
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit() {
     setSubmitting(true);
     try {
-      const deadlineIso = new Date(registrationDeadline).toISOString();
       if (event) {
         await api.updateEvent({
           eventId: event.eventId,
-          updates: { title, description, date, startTime, endTime, venue, registrationDeadline: deadlineIso },
+          updates: { title, description, date, startTime, endTime, venue },
         });
         toast.success("Event updated successfully.");
       } else {
-        await api.createEvent({ title, description, date, startTime, endTime, venue, registrationDeadline: deadlineIso });
+        await api.createEvent({ title, description, date, startTime, endTime, venue });
         toast.success("Event created as draft. Publish it when ready.");
       }
       onClose();
@@ -161,7 +157,7 @@ function EventFormModal({ event, onClose }: { event?: ClubEvent; onClose: () => 
     }
   }
 
-  const valid = title.trim() && date && startTime && endTime && venue.trim() && registrationDeadline;
+  const valid = title.trim() && date && startTime && endTime && venue.trim();
 
   return (
     <Modal title={event ? "Edit Event Details" : "Create New Event"} onClose={onClose}>
@@ -187,9 +183,6 @@ function EventFormModal({ event, onClose }: { event?: ClubEvent; onClose: () => 
 
       <label htmlFor="venue">Venue</label>
       <input id="venue" placeholder="e.g. Anna Auditorium" value={venue} onChange={(e) => setVenue(e.target.value)} />
-
-      <label htmlFor="deadline">Registration Deadline</label>
-      <input id="deadline" type="datetime-local" value={registrationDeadline} onChange={(e) => setRegistrationDeadline(e.target.value)} />
 
       <div className="modal-actions">
         <button className="btn" onClick={onClose} disabled={submitting}>

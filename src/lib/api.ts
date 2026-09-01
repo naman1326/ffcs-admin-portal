@@ -68,7 +68,7 @@ export const api = {
       startTime: string;
       endTime: string;
       venue: string;
-      registrationDeadline: string;
+      registrationDeadline?: string;
     },
     { eventId: string }
   >(functions, "createEvent"),
@@ -77,17 +77,6 @@ export const api = {
   unpublishEvent: httpsCallable<{ eventId: string }, { success: boolean }>(functions, "unpublishEvent"),
   cancelEvent: httpsCallable<{ eventId: string }, { success: boolean }>(functions, "cancelEvent"),
 
-  // Registrations
-  deleteRegistration: httpsCallable<{ registrationId: string; kind: "external" | "own" }, { success: boolean }>(
-    functions,
-    "deleteRegistration"
-  ),
-  replaceRegistrationReceipt: httpsCallable<
-    { registrationId: string; kind: "external" | "own"; fileBase64: string },
-    { success: boolean }
-  >(functions, "replaceRegistrationReceipt"),
-  exportEventRegistrationsCsv: httpsCallable<{ eventId: string }, { csv: string }>(functions, "exportEventRegistrationsCsv"),
-
   // Announcements
   createAnnouncement: httpsCallable<{ title: string; body: string }, { announcementId: string }>(
     functions,
@@ -95,3 +84,4 @@ export const api = {
   ),
   deleteAnnouncement: httpsCallable<{ announcementId: string }, { success: boolean }>(functions, "deleteAnnouncement"),
 };
+
