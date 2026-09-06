@@ -48,7 +48,7 @@ export default function Login() {
     <div className="login-shell">
       <div className="login-card">
         <div className="login-brand-container">
-          <img src="/logo.png" alt="Swarajya" className="login-logo" onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
+          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Swarajya" className="login-logo" onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
           <h1 className="gate-brand-title">स्वराज्य</h1>
           <p className="gate-brand-subtitle">FFCS Member Management Portal</p>
           <div style={{ display: "inline-flex", marginTop: 10 }}>

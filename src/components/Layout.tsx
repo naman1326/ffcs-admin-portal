@@ -93,7 +93,7 @@ export default function Layout() {
       <aside className="sidebar">
         <div className="sidebar-header">
           <NavLink to="/" className="brand" onClick={() => setNavOpen(false)}>
-            <img src="/logo.png" alt="Swarajya Logo" className="sidebar-logo" onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
+            <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Swarajya Logo" className="sidebar-logo" onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
             <div className="brand-text-group">
               <span className="brand-title">स्वराज्य</span>
               <span className="brand-subtitle">FFCS Member Portal</span>
@@ -142,7 +142,7 @@ export default function Layout() {
       <div className="main">
         <div className="topbar">
           <div className="topbar-brand">
-            <img src="/logo.png" alt="Swarajya Logo" className="topbar-logo" onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
+            <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Swarajya Logo" className="topbar-logo" onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
             <span className="topbar-title">स्वराज्य Admin</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
